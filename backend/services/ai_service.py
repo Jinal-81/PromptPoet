@@ -4,13 +4,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize the client. It will automatically use the OPENAI_API_KEY environment variable.
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def get_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    return AsyncOpenAI(api_key=api_key)
 
 async def generate_poem_from_ai(prompt: str, style: str, mood: str = None) -> str:
-    \"\"\"
+    """
     Calls OpenAI to generate a poem based on prompt, style, and mood.
-    \"\"\"
+    """
+    client = get_client()
+    if not client:
+        raise Exception("OpenAI API key is missing. Please set it in the .env file.")
+
     system_prompt = (
         "You are an expert, creative poet. You write incredibly beautiful and moving poetry. "
         "Your output must ONLY be the poem itself, with no conversational filler, "
