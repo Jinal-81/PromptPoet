@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptPoet - AI Poem Generator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6b21a8', // purple-800
+                        secondary: '#d8b4fe', // purple-300
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans">
+    
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-feather text-primary dark:text-secondary text-2xl"></i>
+                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">PromptPoet</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggleBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle Dark Mode">
+                        <i id="themeIcon" class="fa-solid fa-moon text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <a href="https://github.com" target="_blank" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <i class="fa-brands fa-github text-gray-600 dark:text-gray-300 text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Generator Configuration -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700 transition-all hover:shadow-2xl">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-primary dark:text-secondary"></i> Create Poem
+                </h2>
+                
+                <form id="poemForm" class="space-y-4">
+                    <!-- Prompt -->
+                    <div>
+                        <label for="prompt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">What should the poem be about?</label>
+                        <textarea id="prompt" rows="3" class="w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm p-3 border transition custom-scrollbar" placeholder="e.g. A serene majestic sunset on a quiet beach..." required></textarea>
+                        <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                            <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-800 transition prompt-suggestion">Love</span>
+                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition prompt-suggestion">Nature</span>
+                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800 transition prompt-suggestion">Motivation</span>
+                            <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition prompt-suggestion">Sadness</span>
+                            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded cursor-pointer hover:bg-yellow-200 dark:hover:bg-yellow-800 transition prompt-suggestion">Friendship</span>
+                        </div>
+                    </div>
+
+                    <!-- Style -->
+                    <div>
+                        <label for="style" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Poem Style</label>
+                        <select id="style" class="w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm p-2 border transition">
+                            <option value="Haiku">Haiku</option>
+                            <option value="Sonnet">Sonnet</option>
+                            <option value="Free Verse" selected>Free Verse</option>
+                            <option value="Rhyming Poem">Rhyming Poem</option>
+                            <option value="Limerick">Limerick</option>
+                        </select>
+                    </div>
+
+                    <!-- Mood -->
+                    <div>
+                        <label for="mood" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mood</label>
+                        <select id="mood" class="w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm p-2 border transition">
+                            <option value="">Any (Let AI decide)</option>
+                            <option value="Joyful">Joyful</option>
+                            <option value="Melancholic">Melancholic</option>
+                            <option value="Inspirational">Inspirational</option>
+                            <option value="Romantic">Romantic</option>
+                            <option value="Mysterious">Mysterious</option>
+                            <option value="Humorous">Humorous</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" id="generateBtn" class="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg transform transition hover:-translate-y-0.5 mt-4">
+                        <span id="btnText">Generate Poem</span>
+                        <i id="btnIcon" class="fa-solid fa-paper-plane ml-2"></i>
+                        <svg id="btnSpinner" class="hidden animate-spin ml-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- History Section (Mobile layout shown below desktop, in left col otherwise) -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-gray-400"></i> History
+                </h3>
+                <div id="historyList" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                    <!-- History items will be injected here -->
+                    <div class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">Loading history...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Result Display -->
+        <div class="lg:col-span-8">
+            <div id="resultCard" class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl min-h-[500px] border border-gray-100 dark:border-gray-700 relative overflow-hidden flex flex-col transition-all">
+                
+                <!-- Decorative element -->
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-purple-200 to-blue-200 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full opacity-50 blur-xl"></div>
+                
+                <!-- Result Toolbar -->
+                <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm z-10 sticky top-0 rounded-t-2xl">
+                    <div id="poemMetadata" class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        Your poetic creation will appear here...
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="copyBtn" class="hidden p-2 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-secondary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Copy to Clipboard">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <button id="downloadBtn" class="hidden p-2 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Download as PDF">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <button id="shareBtn" class="hidden p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Share via X">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Poem Content -->
+                <div class="p-8 flex-grow flex items-center justify-center relative z-10">
+                    <div id="poemContentArea" class="w-full h-full flex items-center justify-center">
+                        <div class="text-center text-gray-400 dark:text-gray-500 opacity-50 flex flex-col items-center">
+                            <i class="fa-solid fa-book-open text-5xl mb-4"></i>
+                            <p>Awaiting your inspiration...</p>
+                        </div>
+                    </div>
+                    <!-- This div is used specifically for the PDF generation -->
+                    <div id="pdfContent" class="hidden font-serif">
+                        <h1 id="pdfTitle" class="text-3xl font-bold mb-6 text-center text-gray-800">PromptPoet Creation</h1>
+                        <div id="pdfBody" class="text-lg leading-relaxed text-gray-700 whitespace-pre-wrap px-12 py-8 text-center"></div>
+                        <div class="mt-8 text-sm text-gray-400 text-center italic">Generated by PromptPoet</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notification toast -->
+            <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-20 opacity-0 flex items-center gap-3 z-50">
+                <i class="fa-solid fa-circle-check text-green-400"></i>
+                <span id="toastMessage">Copied to clipboard!</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>&copy; 2026 PromptPoet. Powered by AI.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
